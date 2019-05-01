@@ -7,7 +7,7 @@ NVT.mdp['nsteps'] = 200000
 NPT.mdp['nsteps'] = 500000
 
 t = 298.15
-p = spc.H2O.pressure(t)
+p = 100e3
 rho = spc.H2O.density(t) / spc.H2O.molar_mass
 
 # define initial system, size = 3.2 nm
