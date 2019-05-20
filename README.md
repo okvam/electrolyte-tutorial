@@ -19,7 +19,7 @@ In the first part of this tutorial we will simulate some properties of water usi
 
 ### NPT simulation
 
-We will be using the simulation package Gromacs to study the liquid densities of water. Locate the python scripts for setting up simulations for water in the directory **1. water**, and open the file **NPT_SPCE.py**. First, we load some pre-packaged python modules: 
+We will be using the simulation package Gromacs (3) to study the liquid densities of water. Locate the python scripts for setting up simulations for water in the directory **1. water**, and open the file **NPT_SPCE.py**. First, we load some pre-packaged python modules: 
 
     import chemutils.species as spc
     from chemutils.simulation import SimulationSystem, SPCE
@@ -50,7 +50,7 @@ These simulations should take about 1 hour to run on a modern desktop computer. 
 
 ### Gibbs ensemble simulation
 
-Having looked at liquid properties at 298.15K and 1 bar, we will now consider vapor-liquid equilibria of water. We will be using the simulation package Cassandra to determine the the saturated vapor pressure for a given temperature. Locate the file **GEMC_SPCE.py**. This file is similar in structure to the one used for liquid density, with some differences shown below. Firstly, we use a different set of simulation methods:
+Having looked at liquid properties at 298.15K and 1 bar, we will now consider vapor-liquid equilibria of water. We will be using the simulation package Cassandra (4) to determine the the saturated vapor pressure for a given temperature. Locate the file **GEMC_SPCE.py**. This file is similar in structure to the one used for liquid density, with some differences shown below. Firstly, we use a different set of simulation methods:
 
     from chemutils.simulation.cassandra import CassandraMethod
 
@@ -80,7 +80,7 @@ Finally we run our simulations. After simulating using the NPT method we delete 
 
 These simulations take a bit longer to run, about 2-3 hours on a modern desktop computer. First, a simulation box of 3.2 nm is filled with SPC/E water molecules at a density matching that of real water at 298.15K. Cassandra simulates the box for 1000 MC sweeps in the NPT ensemble. Once this has completed, the final configuration of the liquid is used together with a (randomly assigned) vapor phase as the starting configurations for Gibbs ensemble simulation. 5000 MC cycles will be used for equilibration, and another 5000 cycles for the final Gibbs ensemble simulation.
 
-After the first of the two simulations have completed (or while its still running, if you are impatient), look at the files **sim.out.box1.prp** and **sim.out.box1.prp** inside the simulation directory. These contain properties of the liquid and vapor systems as a function of simulation cycle. What is the initial behaviour of the two systems? Which properties converge quickly, and which take a long time? How can you be confident the system is stable?
+After the first of the two simulations have completed (or while its still running, if you are impatient), look at the files **sim.out.box1.prp** and **sim.out.box2.prp** inside the simulation directory. These contain properties of the liquid and vapor systems as a function of simulation cycle. What is the initial behaviour of the two systems? Which properties converge quickly, and which take a long time? How can you be confident the system is stable?
 
 ### Further Simulations
 
@@ -88,10 +88,10 @@ Using the scripts provided for Gromacs and Cassandra as a starting point, simula
 
 ### references
 
-1. [Martin Chaplin, London South Bank University](http://www1.lsbu.ac.uk/water/water_anomalies.html)
+1. [Anomalous properties of water, by Martin Chaplin, London South Bank University](http://www1.lsbu.ac.uk/water/water_anomalies.html)
 2. [H.J.C. Berendsen, J.R. Grigera, and T.P. Straatsma, J. Phys. Chem. 91, 6269-6271](http://dx.doi.org/10.1021/j100308a038)
-3. [Gromacs](http://manual.gromacs.org/)
-4. [Cassandra](https://cassandra.nd.edu/)
+3. [Gromacs home page](http://manual.gromacs.org/)
+4. [Cassandra home page](https://cassandra.nd.edu/)
 
 ## Part 2. Methanol
 Methanol is the smallest alcohol, with one of the H-atoms from water replaced with an organic CH<sub>3</sub> group. Many simple electrolytes are reasonably soluble also in methanol, albeit less so than in water. 
@@ -102,13 +102,13 @@ In the second part of this tutorial we will simulate some properties of methanol
 * What is the saturated vapor pressure of TraPPE methanol at 298.15K?
 * Is the simulated vapor-liquid composition diagram in good agreement with experiment for water + methanol at 1 bar? 
 
-### references
+### References
 
 5. [B. Chen, J.J. Potoff, and J.I. Siepmann, J. Phys. Chem. B 105, 3093-3104](http://dx.doi.org/10.1021/jp003882x)
 6. binary VLE 
 
 ## Part 3. Vapor pressure depression
-Electrolyte species are for all intents and purposes non-volatile. From Raoult's law we expect the partial vapor pressure P<sub>i</sub> of a component in a liquid mixture to be proportional to its liquid mole fraction x<sub>i</sub>, 
+Electrolyte species are for all intents and purposes non-volatile. From Raoult's law we expect the vapor pressure _p_ of a liquid mixture to be proportional to the sum of it components scaled by their liquid mole fraction x<sub>i</sub>, 
 
 P<sub>i</sub> = x<sub>i</sub> * P<sub>i</sub><sup>s</sup>
 
