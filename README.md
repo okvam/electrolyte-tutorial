@@ -152,9 +152,9 @@ Saturated vapor and liquid densities as a function of temperature together form 
 
 ### 2-component Gibbs ensemble simulation
 
-Separation processes often take advantage of the differences in composition of fluids between different phases. Perhaps the most well-known fluid separation process is distillation, where lighter components are concentrated in the vapor phase while heavy components are concentrated in the liquid phase. For a given pressure, the _distillation curve_ gives the composition of the liquid and vapor as a function of temperature. For methanol and water at 101.325 kPa, the distillation curve is a simple envelope connecting the boiling temperature of water to that of methanol. For other species such as ethanol, the two curves intersect, creating an [azeotrope](https://en.wikipedia.org/wiki/Azeotrope).
+Separation processes often take advantage of the differences in composition of fluids between different phases. Perhaps the most well-known fluid separation process is distillation, where lighter components are concentrated in the vapor phase while heavy components are concentrated in the liquid phase. For a given pressure, the _distillation curve_ gives the composition of the liquid and vapor as a function of temperature. For methanol and water at 101.325 kPa, the distillation curve is a simple envelope connecting the boiling temperature of water to that of methanol, shown in Figure 1. For other species such as ethanol, the two curves may intersect, creating an [azeotrope](https://en.wikipedia.org/wiki/Azeotrope).
 
-![methanol distillation curve](okvam.github.com/electrolyte-tutorial/figures/methanol.jpg) 
+![methanol distillation curve](https://github.com/okvam/electrolyte-tutorial/figures/methanol.jpg) 
 _Figure 1: Distillation curve of methanol (1) + water (2) at 101.325 kPa. Points indicate experimental values, line is NRTL correlation. Figure from [Gao et al. 2012](http://dx.doi.org/10.1155/2012/641251)._
 
 Using the SPCE and TraPPE models, we will simulate the vapor-liquid composition of methanol + water, and see how our model compares against experimental values. 
