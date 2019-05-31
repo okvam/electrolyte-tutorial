@@ -17,3 +17,4 @@ liq = SimulationSystem({SPCE:rho}, T=t, P=p, size=3.2e-9)
 liq = NVT(liq)
 liq = NPT(liq)
 
+print('liquid density: {}'.format(liq.density.mean()))
