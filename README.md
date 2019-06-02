@@ -4,7 +4,7 @@ Tutorial for chemical theory and simulation of electrolyte solutions.
 ## Part 0. Introduction
 Electrolytes are compounds which upon contact with a solvent dissociate (from greek _lysis_, loosening) to form electrically charged species (_electro_). The most familiar electrolyte is perhaps the table salt found in your kitchen, but electrolytes are of fundamental important for physical processes ranging from the regulation of biological systems to the battery technology powering our electronic devices. Thermodynamics of electrolyte solutions have a long history of scientific investigation. 
 
-### dependencies
+### Dependencies
 
 This tutorial assumes you have the simulation packages Gromacs and Cassandra installed and callable with the shell commands 'gmx' and 'cassandra', respectively. For installation instructions, please see their respective home pages. Further, we make use of the python package 'chemutils'. For acess to this package please contact @okvam on github. 
 
@@ -82,11 +82,11 @@ These simulations take a bit longer to run, about 2-3 hours on a modern desktop 
 
 After the first of the two simulations have completed (or while its still running, if you are impatient), look at the files **sim.out.box1.prp** and **sim.out.box2.prp** inside the simulation directory. These contain properties of the liquid and vapor systems as a function of simulation cycle. What is the initial behaviour of the two systems? Which properties converge quickly, and which take a long time? How can you be confident the system is stable?
 
-### Further Simulations
+### Further simulations
 
 Using the scripts provided for Gromacs and Cassandra as a starting point, simulate SPC/E water across a range of temperatures to investigate (i) whether this water model has a density maximum at 1 bar, like real water, and (ii) how the saturated vapor pressure varies as you increase temperature.
 
-### references
+### References
 
 1. [Anomalous properties of water, by Martin Chaplin, London South Bank University](http://www1.lsbu.ac.uk/water/water_anomalies.html)
 2. [H.J.C. Berendsen, J.R. Grigera, and T.P. Straatsma, J. Phys. Chem. 91, 6269-6271](http://dx.doi.org/10.1021/j100308a038)
@@ -100,7 +100,7 @@ In the second part of this tutorial we will simulate some properties of methanol
 
 * How does the liquid density of TraPPE methanol compare to real methanol at 298.15K and 1 bar?
 * What is the saturated vapor pressure of TraPPE methanol at 298.15K?
-* Is the simulated vapor-liquid composition diagram in good agreement with experiment for water + methanol at 1 bar? 
+* Is the simulated vapor-liquid composition diagram in agreement with experiment for water + methanol? 
 
 ### NPT simulation
 
@@ -150,7 +150,12 @@ We use the NPT Gromacs method, and create our own Cassandra methods as before. T
 
 Saturated vapor and liquid densities as a function of temperature together form the _vapor-liquid coexistence curve_, the fluid phase diagram of the pure fluid up to the critical point. Vapor-liquid coexistence curves are often reported together with the saturated vapor pressure as a function of temperature, and together give a good picture of the phase behavior of the pure fluid. 
 
-### 2-component Gibbs ensemble simulation
+### References
+
+5. [B. Chen, J.J. Potoff, and J.I. Siepmann, J. Phys. Chem. B 105, 3093-3104](http://dx.doi.org/10.1021/jp003882x)
+6. binary VLE 
+
+## Part 3. Mixed solvent
 
 Separation processes often take advantage of the differences in composition of fluids between different phases. Perhaps the most well-known fluid separation process is distillation, where lighter components are concentrated in the vapor phase while heavy components are concentrated in the liquid phase. For a given pressure, the _distillation curve_ gives the composition of the liquid and vapor as a function of temperature. For methanol and water at 101.325 kPa, the distillation curve is a simple envelope connecting the boiling temperature of water to that of methanol, shown in Figure 1. For other species such as ethanol, the two curves may intersect, creating an [azeotrope](https://en.wikipedia.org/wiki/Azeotrope).
 
@@ -158,12 +163,30 @@ Separation processes often take advantage of the differences in composition of f
 
 _Figure 1: Distillation curve of methanol (1) + water (2) at 101.325 kPa. Points indicate experimental values, line is NRTL correlation. Figure from [Gao et al. 2012](http://dx.doi.org/10.1155/2012/641251)._
 
-Using the SPCE and TraPPE models, we will simulate the vapor-liquid composition of methanol + water, and see how our model compares against experimental values. We guess the initial composition of liquid and vapor phases using Raoult's law, which is usually not too far away. 
+### 2-component Gibbs ensemble simulation
 
-### References
+Using the SPCE and TraPPE models, we will simulate the vapor-liquid composition of methanol + water, and see how our model compares against experimental values. Locate the file **GEMC_methanol_SPCE.py**. In addition to the setup used in previous simulations, we need to guess the initial composition of the liquid and vapor phases. To do this we start from [Raoult's law](https://en.wikipedia.org/wiki/Raoult%27s_law), describing the partial pressure contribution of each liquid in a mixture as proportional to its mole fraction. For a system at ambient pressure, we require that the total pressure of the system equals 101.325 kPa (we are considering an _isobaric_ process). Note that since we are using molecular model fluids, we should use the vapor pressures of the _model_, not the real solvent. This is important for SPC/E, which has a vapor pressure that is significantly lower than real water.
 
-5. [B. Chen, J.J. Potoff, and J.I. Siepmann, J. Phys. Chem. B 105, 3093-3104](http://dx.doi.org/10.1021/jp003882x)
-6. binary VLE 
+To satisfy Raoult's law at a given temperature, we want to find x<sub>i</sub> for each of the components. For the case of methanol + water, the temperature can be anywhere in the range between the normal boiling points of the two neat solvents. Having previously characterised the pure solvents, we know to reasonably good accuracy what their saturation pressures are as a function of temperature. For a two-component mixture, rearranging Raoult's law gives 
+
+    # Raoult's law: x1 * P1(t) + x2 * P2(t) = 101.325
+    t = 353.15
+    x1 = (101.325e3 - SPCE.pressure(t)) / (methanol.pressure(t) - SPCE.pressure(t))
+    x2 = 1 - x1
+    p1, p2 = x1 * methanol.pressure(t), x2 * SPCE.pressure(t)
+
+While the compositions resulting from this guess will be off from the true values, it is often close enough as a starting guess. This allows us to construct the liquid and vapor phases; this time with each component treated separately. For the liquid we calculate the overall molar density from a linear combination of neat solvent molar volumes. We already have the liquid mole fractions. For the vapor, we calculate molar densities for each species as before, this time with a total vapor phase population of 200 molecules.
+
+    # liquid box length ~ 3.5 nm
+    d_liq = 3.5e-9
+    rho_liq = 1 / (x1 * spc.methanol.density / spc.methanol.molar_mass + x1 * spc.methanol.density / spc.methanol.molar_mass)
+
+    N_vap = 200
+    d_vap = (N_vap * Boltzmann * t / (101.325e3))**(1/3)
+    rho1 = p1 / (R * t)
+    rho2 = p2 / (R * t)
+
+We then run the simulation, using Gromacs to generate a reasonable initial liquid configuration. Notice that the Cassandra methods created for this example are subtly different from before: instead of using method 'gemc', we use the method 'gemc_npt'. We are also not deleting our pressure constraint on the liquid phase. This is because we are simulating an isobaric process, and the total volume of the system is _not_ fixed. If we used the same method as before, the system would be underdefined -- there would be infinitely many possible solutions of composition and pressure. 
 
 ## Part 3. Vapor pressure depression
 Electrolyte species are for all intents and purposes non-volatile. From Raoult's law we expect the vapor pressure _p_ of a liquid mixture to be proportional to the sum of it components scaled by their liquid mole fraction x<sub>i</sub>, 
