@@ -165,13 +165,13 @@ _Figure 1: Distillation curve of methanol (1) + water (2) at 101.325 kPa. Points
 
 ### 2-component Gibbs ensemble simulation
 
-Using the SPCE and TraPPE models, we will simulate the vapor-liquid composition of methanol + water, and see how our model compares against experimental values. Locate the file **GEMC_methanol_SPCE.py**. In addition to the setup used in previous simulations, we need to guess the initial composition of the liquid and vapor phases. To do this we start from [Raoult's law](https://en.wikipedia.org/wiki/Raoult%27s_law), describing the partial pressure contribution of each liquid in a mixture as proportional to its mole fraction. For a system at ambient pressure, we require that the total pressure of the system equals 101.325 kPa (we are considering an _isobaric_ process). Note that since we are using molecular model fluids, we should use the vapor pressures of the _model_, not the real solvent. This is important for SPC/E, which has a vapor pressure that is significantly lower than real water.
+Using the SPCE and TraPPE models, we will simulate the vapor-liquid composition of methanol + water, and see how our model compares against experimental values. The Gibbs ensemble can also be used for solvent mixtures (6). Locate the file **GEMC_methanol_SPCE.py**. In addition to the setup used in previous simulations, we need to guess the initial composition of the liquid and vapor phases. To do this we start from [Raoult's law](https://en.wikipedia.org/wiki/Raoult%27s_law), describing the partial pressure contribution of each liquid in a mixture as proportional to its mole fraction. For a system at ambient pressure, we require that the total pressure of the system equals 101.325 kPa (we are considering an _isobaric_ process). Note that since we are using molecular model fluids, we should use the vapor pressures of the _model_, not the real solvent. This is important for SPC/E, which has a vapor pressure that is significantly lower than real water.
 
 To satisfy Raoult's law at a given temperature, we want to find x<sub>i</sub> for each of the components. For the case of methanol + water, the temperature can be anywhere in the range between the normal boiling points of the two neat solvents. Having previously characterised the pure solvents, we know to reasonably good accuracy what their saturation pressures are as a function of temperature. For a two-component mixture, rearranging Raoult's law gives 
 
     # Raoult's law: x1 * P1(t) + x2 * P2(t) = 101.325
-    t = 353.15
-    x1 = (101.325e3 - SPCE.pressure(t)) / (methanol.pressure(t) - SPCE.pressure(t))
+    t, p = 353.15, 101.325e3
+    x1 = (p - SPCE.pressure(t)) / (methanol.pressure(t) - SPCE.pressure(t))
     x2 = 1 - x1
     p1, p2 = x1 * methanol.pressure(t), x2 * SPCE.pressure(t)
 
@@ -188,23 +188,6 @@ While the compositions resulting from this guess will be off from the true value
 
 We then run the simulation, using Gromacs to generate a reasonable initial liquid configuration. Notice that the Cassandra methods created for this example are subtly different from before: instead of using method 'gemc', we use the method 'gemc_npt'. We are also not deleting our pressure constraint on the liquid phase. This is because we are simulating an isobaric process, and the total volume of the system is _not_ fixed. If we used the same method as before, the system would be underdefined -- there would be infinitely many possible solutions of composition and pressure. 
 
-## Part 3. Vapor pressure depression
-Electrolyte species are for all intents and purposes non-volatile. From Raoult's law we expect the vapor pressure _p_ of a liquid mixture to be proportional to the sum of it components scaled by their liquid mole fraction x<sub>i</sub>, 
+### References
 
-P<sub>i</sub> = x<sub>i</sub> * P<sub>i</sub><sup>s</sup>
-
-where P<sub>i</sub><sup>s</sup> is the saturated vapor pressure of the neat solvent. In the case of electrolyte solutions, only the solvent is expected to contribute to the overall vapor pressure of solution - in other words, the electrolyte has a saturated vapor pressure of zero.  (show derivation of osmotic coefficient).
-
-In the third part of this tutorial, we will simulate the vapor pressure depression of water with increasing concentration of LiBr, using the alkali halide model of Joung and Cheatham, 2008. We will compare the resulting osmotic coefficients with those correlated by Pitzer and Mayorga 19XX for real water. 
-
-### references
-
-7. Joung and Cheatham 2008
-8. Pitzer and Mayorga 19XX
-
-## Part 4. Mixed solvents
-Most applications of electrolytes involve more than one solvent. In some cases, the electrolyte species act to modulate the thermodynamic behaviour of the mixed system. An example of this is purification of alcohols from water, where the addition of electrolyte causes phase separation of solvents which would otherwise be miscible. In other cases, the electrolytes themselves are the focus, such as in conductive electrochemical systems. Regardless of application the thermodynamics of electrolytes and solvents are intimately linked. 
-
-### references 
-
-9. ???
+6. [J.J. De Pablo, J.M. Prausnitz, Fluid Phase Equilibria 53, 177-189 (1989)](https://doi.org/10.1016/0378-3812(89)80085-8) 
