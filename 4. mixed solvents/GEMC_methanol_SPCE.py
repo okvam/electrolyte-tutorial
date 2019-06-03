@@ -13,11 +13,11 @@ NPT.mdp['nsteps'] = 500000
 EQ = CassandraMethod(method='gemc_npt', equilibration=True, sweeps=10000, kappa=20, swap={methanol, SPCE})
 GEMC = CassandraMethod(method='gemc_npt', name='gemc', sweeps=50000, kappa=20, swap={methanol, SPCE})
 
-def simulate(m):
+def simulate():
 
     # Raoult's law: x1 * P1(t) + x2 * P2(t) = 101.325
-    t = 353.15
-    x1 = (101.325e3 - SPCE.pressure(t)) / (methanol.pressure(t) - SPCE.pressure(t))
+    t, p = 353.15, 101.325e3
+    x1 = (p - SPCE.pressure(t)) / (methanol.pressure(t) - SPCE.pressure(t))
     x2 = 1 - x1
     p1, p2 = x1 * methanol.pressure(t), x2 * SPCE.pressure(t)
 
@@ -25,16 +25,16 @@ def simulate(m):
 
     # liquid box length ~ 3.5 nm
     d_liq = 3.5e-9
-    rho_liq = 1 / (x1 * spc.methanol.density / spc.methanol.molar_mass + x1 * spc.methanol.density / spc.methanol.molar_mass)
+    rho_liq = 1 / (x1 * spc.methanol.molar_mass / spc.methanol.density(t)+ x2 * spc.H2O.molar_mass / spc.H2O.density(t))
 
     N_vap = 200
-    d_vap = (N_vap * Boltzmann * t / (101.325e3))**(1/3)
+    d_vap = (N_vap * Boltzmann * t / p)**(1/3)
     rho1 = p1 / (R * t)
     rho2 = p2 / (R * t)
 
     # define initial systems
-    liq = SimulationSystem({methanol:x1 * rho_liq, SPCE:x2 * rho_liq}, T=t, P=methanol.pressure(t), size=d_liq)
-    vap = SimulationSystem({methanol:rho1, SPCE:rho2}, T=t, size=d_vap)
+    liq = SimulationSystem({methanol:x1 * rho_liq, SPCE:x2 * rho_liq}, T=t, P=p, size=d_liq)
+    vap = SimulationSystem({methanol:rho1, SPCE:rho2}, T=t, P=p, size=d_vap)
 
     # do NPT equilibration for liquid phase, then remove pressure constraint
     liq = NVT(liq)
@@ -51,4 +51,4 @@ def simulate(m):
     print('y1 = {}'.format((vap.molarity[methanol] / (vap.molarity[methanol] + vap.molarity[SPCE])).mean()))
 
 if __name__ == "__main__":
-    simulate(float(sys.argv[1]))
+    simulate()
