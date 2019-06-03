@@ -153,7 +153,6 @@ Saturated vapor and liquid densities as a function of temperature together form 
 ### References
 
 5. [B. Chen, J.J. Potoff, and J.I. Siepmann, J. Phys. Chem. B 105, 3093-3104](http://dx.doi.org/10.1021/jp003882x)
-6. binary VLE 
 
 ## Part 3. Mixed solvent
 
@@ -161,7 +160,7 @@ Separation processes often take advantage of the differences in composition of f
 
 ![methanol distillation curve](figures/methanol.jpg?raw=true "methanol + water") 
 
-_Figure 1: Distillation curve of methanol (1) + water (2) at 101.325 kPa. Points indicate experimental values, line is NRTL correlation. Figure from [Gao et al. 2012](http://dx.doi.org/10.1155/2012/641251)._
+_Figure 1: Distillation curve of methanol (1) + water (2) at 101.325 kPa. Points indicate experimental values, line is a [Non-Random Two Fluid](https://en.wikipedia.org/wiki/Non-random_two-liquid_model) (NRTL) correlation. Figure from [Gao et al. 2012](http://dx.doi.org/10.1155/2012/641251)._
 
 ### 2-component Gibbs ensemble simulation
 
@@ -179,14 +178,20 @@ While the compositions resulting from this guess will be off from the true value
 
     # liquid box length ~ 3.5 nm
     d_liq = 3.5e-9
-    rho_liq = 1 / (x1 * spc.methanol.density / spc.methanol.molar_mass + x1 * spc.methanol.density / spc.methanol.molar_mass)
+    rho_liq = 1 / (x1 * spc.methanol.molar_mass / spc.methanol.density(t)+ x2 * spc.H2O.molar_mass / spc.H2O.density(t))
 
     N_vap = 200
-    d_vap = (N_vap * Boltzmann * t / (101.325e3))**(1/3)
+    d_vap = (N_vap * Boltzmann * t / p)**(1/3)
     rho1 = p1 / (R * t)
     rho2 = p2 / (R * t)
 
 We then run the simulation, using Gromacs to generate a reasonable initial liquid configuration. Notice that the Cassandra methods created for this example are subtly different from before: instead of using method 'gemc', we use the method 'gemc_npt'. We are also not deleting our pressure constraint on the liquid phase. This is because we are simulating an isobaric process, and the total volume of the system is _not_ fixed. If we used the same method as before, the system would be underdefined -- there would be infinitely many possible solutions of composition and pressure. 
+
+From the isobaric Gibbs ensemble simulation we obtain an average composition for the vapor and liquid phases at 353.15 K. How does this compare against experimental values? What should we expect to see by increasing or decreasing the temperature? 
+
+### Further simulations
+
+From experimental data, we know that water and methanol do not form an azeotrope at ambient pressure. However, ethanol and many higher alcohols do form azeotropes. Based on our existing simulation data, should we expect TraPPE methanol and SPC/E water to form an azeotrope? Try to simulate the mixture at your best guess for the azeotropic point, maintaining a pressure of 101.325 kPa. What do you observe?
 
 ### References
 
